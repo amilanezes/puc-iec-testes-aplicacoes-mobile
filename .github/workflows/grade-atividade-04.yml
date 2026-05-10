@@ -94,9 +94,11 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                body: `🎓 **Auto-grade — Atividade 4 (Maestro Suite)**\n\n` +
-                  `❌ **Erro:** entrega não pôde ser avaliada. Verifique:\n` +
-                  `- Path da entrega: \`exercicios/04-suite-maestro-cross-platform/aluno-<seu-github-username>/\`\n` +
+                body: `## 🤖 J.A.R.V.I.S. — *autograder do Prof. Jackson*\n\n` +
+                  `> *Just A Rather Very Intelligent System* — bot que executa as regras de avaliação automatizada do prof nos PRs de exercício.\n\n` +
+                  `**Atividade 4 (Maestro Suite)**\n\n` +
+                  `❌ **Não consegui avaliar sua entrega.** Verifique:\n` +
+                  `- Path: \`exercicios/04-suite-maestro-cross-platform/aluno-<seu-github-username>/\`\n` +
                   `- Estrutura: \`<entrega>/flows/*.yaml\` + \`<entrega>/README.md\``,
               });
               return;
@@ -104,19 +106,48 @@ jobs:
             const grade = JSON.parse(fs.readFileSync(path, 'utf8'));
             const passou = grade.pass;
             // LGPD: comment público mostra apenas status. Nota numérica + breakdown
-            // ficam em artifact privado (acesso restrito ao prof).
+            // ficam em artifact privado (acesso restrito ao prof Jackson).
             const body = [
-              `🎓 **Auto-grade — Atividade 4 (Maestro Suite)**`,
+              `## 🤖 J.A.R.V.I.S. — *autograder do Prof. Jackson*`,
+              ``,
+              `> *Just A Rather Very Intelligent System* — bot que executa as regras de avaliação automatizada do prof nos PRs de exercício.`,
+              ``,
+              `**Atividade 4 (Maestro Suite)**`,
               ``,
               `**Status:** ${passou ? '✅ Critérios mínimos automatizados atendidos' : '⚠️ Revisão manual necessária'}`,
               ``,
-              `Avaliação automatizada parcial concluída. A nota final, breakdown por critério`,
-              `e parecer do(a) professor(a) serão **divulgados pelo Canvas** após revisão manual.`,
+              `Avaliação automatizada parcial concluída. A **pontuação final**`,
+              `será lançada por mim (Prof. Jackson) **no Canvas** após revisão manual.`,
               ``,
-              `> Critério "execução real em emulator" requer demonstração local pelo aluno.`,
-              `> Anexe vídeo/log de \`maestro test flows/\` na descrição deste PR.`,
+              `### 🎥 Demonstração local (obrigatória — vale 4pts)`,
               ``,
-              `_Aluno: consulte sua nota oficial no Canvas. Dúvidas? Fórum da disciplina._`,
+              `Critério "execução real em emulator" não roda em CI público (limitação de KVM).`,
+              `Anexe **vídeo curto** demonstrando \`maestro test flows/\` rodando no seu emulator/device:`,
+              ``,
+              `**Como gravar (escolha 1):**`,
+              `- macOS: \`Cmd+Shift+5\` → Record selected portion → grava o emulator`,
+              `- Linux: SimpleScreenRecorder, Kazam, ou \`ffmpeg -f x11grab\``,
+              `- Windows: Game Bar (\`Win+G\`) ou OBS Studio`,
+              `- Mobile real: gravação de tela nativa (Android 11+) ou QuickTime (iOS via cabo)`,
+              ``,
+              `**Como anexar no PR:**`,
+              `1. **Upload direto no GitHub** (recomendado para arquivos < 10MB):`,
+              `   - Arraste o vídeo \`.mp4\`, \`.mov\` ou \`.webm\` para o campo de descrição/comentário`,
+              `   - GitHub gera URL pública automaticamente`,
+              `2. **Loom** (sem limite, gratuito): cole o link em comment do PR`,
+              `3. **YouTube unlisted**: cole link em comment`,
+              ``,
+              `**Formatos aceitos pelo GitHub:** \`.mp4\`, \`.mov\`, \`.webm\` (máx ~10MB).`,
+              `Para arquivos maiores, prefira Loom ou YouTube unlisted.`,
+              ``,
+              `**O que mostrar no vídeo (≤ 2min):**`,
+              `- Emulator/device aberto`,
+              `- Comando \`maestro test flows/\` rodando`,
+              `- Cada flow concluindo com sucesso`,
+              `- Saída final do Maestro (resumo de runs)`,
+              ``,
+              `_Sua pontuação final será divulgada **no Canvas**, não neste PR._`,
+              `_Dúvidas? **Teams da turma** (canal oficial das aulas ao vivo) ou e-mail informado em sala._`,
             ].join('\n');
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
