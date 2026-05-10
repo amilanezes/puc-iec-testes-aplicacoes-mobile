@@ -82,7 +82,7 @@ jobs:
           retention-days: 90
           if-no-files-found: warn
 
-      - name: Post PR comment
+      - name: Post PR comment (LGPD-safe — sem nota explícita)
         if: always()
         uses: actions/github-script@v7
         with:
@@ -95,26 +95,28 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 body: `🎓 **Auto-grade — Atividade 4 (Maestro Suite)**\n\n` +
-                  `❌ **Erro:** validator não produziu grade.json. Verifique logs do workflow.\n\n` +
-                  `Path esperado da entrega: \`exercicios/04-suite-maestro-cross-platform/aluno-${{ steps.discover.outputs.matricula }}/\`\n` +
-                  `Estrutura esperada: \`<entrega>/flows/*.yaml\` + \`<entrega>/README.md\``,
+                  `❌ **Erro:** entrega não pôde ser avaliada. Verifique:\n` +
+                  `- Path da entrega: \`exercicios/04-suite-maestro-cross-platform/aluno-<seu-github-username>/\`\n` +
+                  `- Estrutura: \`<entrega>/flows/*.yaml\` + \`<entrega>/README.md\``,
               });
               return;
             }
             const grade = JSON.parse(fs.readFileSync(path, 'utf8'));
             const passou = grade.pass;
+            // LGPD: comment público mostra apenas status. Nota numérica + breakdown
+            // ficam em artifact privado (acesso restrito ao prof).
             const body = [
-              `🎓 **Auto-grade — Atividade 4 (Maestro Suite)** (parse-only — execução real validada manualmente pelo prof)`,
+              `🎓 **Auto-grade — Atividade 4 (Maestro Suite)**`,
               ``,
-              `**Score parse-only:** ${grade.score}/${grade.total}  |  **Mínimo:** ${grade.minimo}  |  **Status:** ${passou ? '✅ PASS' : '⚠️ REVIEW NEEDED'}`,
+              `**Status:** ${passou ? '✅ Critérios mínimos automatizados atendidos' : '⚠️ Revisão manual necessária'}`,
               ``,
-              `**Breakdown público:**`,
-              grade.publicBreakdown,
+              `Avaliação automatizada parcial concluída. A nota final, breakdown por critério`,
+              `e parecer do(a) professor(a) serão **divulgados pelo Canvas** após revisão manual.`,
               ``,
-              `> ⚠️ Critério 4 (execução real em emulator) é **0pts em CI** — ubuntu-latest free não tem KVM. Anexe **vídeo/log de execução local** na descrição do PR; prof avalia esse critério manualmente (até 4pts).`,
+              `> Critério "execução real em emulator" requer demonstração local pelo aluno.`,
+              `> Anexe vídeo/log de \`maestro test flows/\` na descrição deste PR.`,
               ``,
-              `_Detalhes completos disponíveis em artifact \`grade-${grade.metadata.studentLogin}\` (acesso prof)._`,
-              `_Valor da atividade na disciplina: 15 pts. Score auto reflete só estrutura + sintaxe; prof ajusta manualmente após review._`,
+              `_Aluno: consulte sua nota oficial no Canvas. Dúvidas? Fórum da disciplina._`,
             ].join('\n');
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
