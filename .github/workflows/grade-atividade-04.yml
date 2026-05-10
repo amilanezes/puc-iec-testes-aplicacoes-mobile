@@ -1,0 +1,151 @@
+name: Grade — Atividade 4 (Maestro Suite)
+
+on:
+  pull_request:
+    paths:
+      - 'exercicios/04-suite-maestro-cross-platform/aluno-*/**'
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  grade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup Java 17 (necessário pra Android SDK)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Install grader deps
+        working-directory: ./grader
+        run: npm ci || npm install
+
+      - name: Discover entrega path
+        id: discover
+        run: |
+          MATRICULA=$(echo "${{ github.event.pull_request.user.login }}" | tr '[:upper:]' '[:lower:]')
+          ENTREGA="exercicios/04-suite-maestro-cross-platform/aluno-${MATRICULA}"
+          echo "matricula=${MATRICULA}" >> $GITHUB_OUTPUT
+          echo "entrega=${ENTREGA}" >> $GITHUB_OUTPUT
+          if [ ! -d "${ENTREGA}" ]; then
+            echo "::error ::Entrega não encontrada em ${ENTREGA}. Verifique convenção de path: exercicios/04-suite-maestro-cross-platform/aluno-<seu-github-username>/"
+            exit 1
+          fi
+          echo "Entrega encontrada: ${ENTREGA}"
+
+      - name: Install Maestro CLI
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+
+      - name: Verify Maestro
+        run: maestro --version
+
+      - name: Run validator (parse-only first, sanity check)
+        working-directory: ./grader
+        run: |
+          npx tsx lib/validators/maestro-suite.ts \
+            --entrega "../${{ steps.discover.outputs.entrega }}" \
+            --output /tmp/grade-dryrun.json \
+            --student-login "${{ steps.discover.outputs.matricula }}" \
+            --commit-sha "${{ github.event.pull_request.head.sha }}" \
+            --no-run || true
+          cat /tmp/grade-dryrun.json | head -50
+
+      - name: Setup Android emulator and run Maestro flows
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          profile: Pixel_8
+          target: google_apis
+          emulator-options: -no-snapshot -no-window -no-audio -no-boot-anim
+          disable-animations: true
+          script: |
+            cd grader
+            npx tsx lib/validators/maestro-suite.ts \
+              --entrega "../${{ steps.discover.outputs.entrega }}" \
+              --output /tmp/grade.json \
+              --student-login "${{ steps.discover.outputs.matricula }}" \
+              --commit-sha "${{ github.event.pull_request.head.sha }}"
+        continue-on-error: true
+
+      - name: Upload grade.json artifact (acesso só pelo prof)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: grade-${{ steps.discover.outputs.matricula }}
+          path: /tmp/grade.json
+          retention-days: 90
+          if-no-files-found: warn
+
+      - name: Post PR comment
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = '/tmp/grade.json';
+            if (!fs.existsSync(path)) {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `🎓 **Auto-grade — Atividade 4 (Maestro Suite)**\n\n` +
+                  `❌ **Erro:** validator não produziu grade.json. Verifique logs do workflow.\n\n` +
+                  `Path esperado da entrega: \`exercicios/04-suite-maestro-cross-platform/aluno-${{ steps.discover.outputs.matricula }}/\`\n` +
+                  `Estrutura esperada: \`<entrega>/flows/*.yaml\` + \`<entrega>/README.md\``,
+              });
+              return;
+            }
+            const grade = JSON.parse(fs.readFileSync(path, 'utf8'));
+            const passou = grade.pass;
+            const body = [
+              `🎓 **Auto-grade — Atividade 4 (Maestro Suite)**`,
+              ``,
+              `**Score:** ${grade.score}/${grade.total}  |  **Mínimo:** ${grade.minimo}  |  **Status:** ${passou ? '✅ PASS' : '⚠️ REVIEW NEEDED'}`,
+              ``,
+              `**Breakdown público:**`,
+              grade.publicBreakdown,
+              ``,
+              `_Detalhes completos disponíveis em artifact \`grade-${grade.metadata.studentLogin}\` (acesso prof)._`,
+              `_Valor da atividade na disciplina: 15 pts. Esse score reflete avaliação automatizada — prof pode ajustar manualmente._`,
+            ].join('\n');
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body,
+            });
+
+      - name: Set status check based on score
+        if: always()
+        run: |
+          if [ -f /tmp/grade.json ]; then
+            PASS=$(cat /tmp/grade.json | grep -o '"pass":[^,]*' | head -1 | cut -d: -f2 | tr -d ' ')
+            if [ "$PASS" = "true" ]; then
+              echo "✅ Pass threshold atingido."
+              exit 0
+            else
+              echo "⚠️  Score abaixo do mínimo. Revisão manual necessária."
+              exit 1
+            fi
+          else
+            echo "❌ grade.json não gerado."
+            exit 1
+          fi

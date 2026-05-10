@@ -107,6 +107,31 @@ Grupos de 3-4 alunos, escolha um dos 10 temas:
 
 Detalhes em [`exercicios/06-projeto-final-grupo/`](./exercicios/06-projeto-final-grupo/).
 
+## Auto-grading via CI 🤖
+
+Algumas atividades são **avaliadas automaticamente** em PR. Workflow:
+
+1. **Fork** este repositório
+2. Crie sua pasta de entrega seguindo convenção:
+   `exercicios/<NN>-<atividade>/aluno-<seu-github-username>/`
+3. Implemente seguindo o `README.md` de cada exercício
+4. Push para seu fork + abra **Pull Request** para `main`
+5. CI dispara automaticamente:
+   - Bot posta **score + breakdown** no PR
+   - Status check verde se ≥ 60% do total
+   - Detalhe completo em artifact (acesso prof)
+
+**Atividades com auto-grading ativo:**
+
+| # | Atividade | Status |
+|---|-----------|--------|
+| A4 | [Suíte Maestro Cross-Platform](./exercicios/04-suite-maestro-cross-platform/) | ✅ Ativo |
+| A2 | Setup + Suíte Unitária | 🔧 Em breve |
+| A3 | Suíte Native UI (Espresso) | 🔧 Em breve |
+| A1, A5 | Análise de Cobertura, Performance/Security | 📝 Manual (correção pelo prof) |
+
+Ver [`grader/README.md`](./grader/README.md) para documentação técnica do autograder.
+
 ## Coordenação
 
 - **Tadeu Faria** — tadeurf7@gmail.com
