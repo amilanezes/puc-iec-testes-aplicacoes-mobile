@@ -9,7 +9,7 @@
 ```bash
 # Fork no GitHub, depois clone o SEU fork:
 git clone https://github.com/SEU-USUARIO/puc-iec-testes-aplicacoes-mobile.git
-cd puc-iec-testes-aplicacoes-mobile/exercicios/02-suite-jest-rntl/exercicio
+cd puc-iec-testes-aplicacoes-mobile/exercicios/02-suite-jest-rntl/pratica
 
 node -v        # precisa v22.x  (use nvm: nvm install 22 && nvm use 22)
 npm install    # ~2-3min na primeira vez
@@ -159,7 +159,7 @@ it('chama /movie/popular e devolve data', async () => {
 | testes passam isolados, falham juntos | store não resetada | `setState` no `beforeEach` |
 | cobertura 100% mas "não testei nada" | teste sem `expect` | todo `it` precisa de ao menos 1 assert |
 | `Couldn't find a navigation object` no MovieCard | faltou mockar `useNavigation` | adicione o `jest.mock('@react-navigation/native', ...)` |
-| `npm install` falha / pacote não encontrado | registry errado | o `.npmrc` do projeto já aponta pro npm público; rode na raiz do `exercicio` |
+| `npm install` falha / pacote não encontrado | registry errado | o `.npmrc` do projeto já aponta pro npm público; rode na raiz do `pratica` |
 
 ---
 
@@ -167,7 +167,7 @@ it('chama /movie/popular e devolve data', async () => {
 
 ```bash
 git checkout -b entrega/atividade-2-seu-nome
-git add exercicios/02-suite-jest-rntl/exercicio/__tests__
+git add exercicios/02-suite-jest-rntl/pratica/__tests__
 git commit -m "test(atv2): suite unitaria favoritesStore + counterStore + api"
 git push origin entrega/atividade-2-seu-nome
 ```

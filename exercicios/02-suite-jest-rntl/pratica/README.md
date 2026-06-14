@@ -61,7 +61,7 @@ __tests__/                    ← SUA ENTREGA — numerados na ordem de fazer
 
 ```bash
 git clone https://github.com/SEU-USUARIO/puc-iec-testes-aplicacoes-mobile.git
-cd puc-iec-testes-aplicacoes-mobile/exercicios/02-suite-jest-rntl/exercicio
+cd puc-iec-testes-aplicacoes-mobile/exercicios/02-suite-jest-rntl/pratica
 npm install
 npm test          # 3 verdes (posterUrl) + alguns vermelhos (complete o expect) + desafios (todo)
 ```

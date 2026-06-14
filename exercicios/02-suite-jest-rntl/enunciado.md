@@ -25,7 +25,7 @@ O app-alvo é o **mesmo app TMDB da disciplina de Arquitetura** (já implementad
 # 1. Fork do repo público no GitHub
 # 2. Clone o SEU fork
 git clone https://github.com/SEU-USUARIO/puc-iec-testes-aplicacoes-mobile.git
-cd puc-iec-testes-aplicacoes-mobile/exercicios/02-suite-jest-rntl/exercicio
+cd puc-iec-testes-aplicacoes-mobile/exercicios/02-suite-jest-rntl/pratica
 npm install
 npm test     # posterUrl já passa verde (3 testes). O resto é seu.
 ```
@@ -132,7 +132,7 @@ Aqui você testa **fluxo entre componentes** (Bloco 2): a lista busca dados (API
 
 1. Fork do repo público: <https://github.com/jacksonsmith/puc-iec-testes-aplicacoes-mobile>
 2. Branch `entrega/atividade-2-<seu-nome>` no seu fork
-3. Trabalhe direto em `exercicios/02-suite-jest-rntl/exercicio/__tests__/` no SEU fork
+3. Trabalhe direto em `exercicios/02-suite-jest-rntl/pratica/__tests__/` no SEU fork
 4. Commit + push pro seu fork (**NÃO comite `node_modules/` nem `coverage/`** — `.gitignore` já cuida)
 5. Submeter no Canvas com link do commit (ou PR)
 
@@ -146,7 +146,7 @@ Aqui você testa **fluxo entre componentes** (Bloco 2): a lista busca dados (API
 
 ## Material de apoio (todos no GitHub público)
 
-- **[exercício (app + scaffolds)](https://github.com/jacksonsmith/puc-iec-testes-aplicacoes-mobile/tree/main/exercicios/02-suite-jest-rntl/exercicio)** — README com tasks
+- **[exercício (app + scaffolds)](https://github.com/jacksonsmith/puc-iec-testes-aplicacoes-mobile/tree/main/exercicios/02-suite-jest-rntl/pratica)** — README com tasks
 - **[guia-passo-a-passo.md](https://github.com/jacksonsmith/puc-iec-testes-aplicacoes-mobile/blob/main/exercicios/02-suite-jest-rntl/guia-passo-a-passo.md)** — comandos + troubleshooting
 - **[template-relatorio.md](https://github.com/jacksonsmith/puc-iec-testes-aplicacoes-mobile/blob/main/exercicios/02-suite-jest-rntl/template-relatorio.md)** — README modelo
 - **[Slide aula 3 — Jest/RNTL](https://github.com/jacksonsmith/puc-iec-testes-aplicacoes-mobile/blob/main/slides/aula-03/aula-03-jest-rntl.pdf)**

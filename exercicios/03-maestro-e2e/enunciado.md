@@ -26,7 +26,7 @@ maestro --version   # deve exibir 1.38.x ou superior
 
 # 3. Clonar o starter
 git clone https://github.com/jacksonsmith/puc-iec-testes-aplicacoes-mobile.git
-cd puc-iec-testes-aplicacoes-mobile/exercicios/03-maestro-e2e/exercicio
+cd puc-iec-testes-aplicacoes-mobile/exercicios/03-maestro-e2e/pratica
 
 # 4. App-alvo já instalado nos devices da disciplina:
 #    iOS:     com.apptestesmobile  (App Store BR)

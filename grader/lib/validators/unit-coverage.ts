@@ -4,7 +4,7 @@
  * Stack: Expo SDK 52 (RN 0.76 + React 18.3) — RNTL de componente + integração funcionam.
  *
  * Heurístico/estrutural: confere os SINAIS da entrega (arquivos, deps, padrões).
- * A execução real dos testes (verde/vermelho) é feita pelo CI `exercicio/.github/workflows/test.yml`.
+ * A execução real dos testes (verde/vermelho) é feita pelo CI `pratica/.github/workflows/test.yml`.
  *
  * Critérios (15 pts total):
  *   Parte A — Suíte Unitária (10 pts)

@@ -9,12 +9,12 @@ Sistema de auto-correção das atividades práticas via GitHub Actions. Aluno fa
 | # | Atividade | Pts | Avaliador | Status |
 |---|-----------|-----|-----------|--------|
 | A1 | Análise de Cobertura | 15 | manual (textual) | — |
-| A2 | Suíte Unitária (Parte A) + Integração (Parte B) | 15 | **CI `exercicio/.github/workflows/test.yml`** (ativo) · `unit-coverage.ts` (estrutural, Fase 2) | **gate de CI ativo** |
+| A2 | Suíte Unitária (Parte A) + Integração (Parte B) | 15 | **CI `pratica/.github/workflows/test.yml`** (ativo) · `unit-coverage.ts` (estrutural, Fase 2) | **gate de CI ativo** |
 | A3 | Suíte Maestro Cross-Platform | 10 | `maestro-suite.ts` | **MVP ativo** |
 | A4 | Performance + Security | 10 | manual (relatório) | — |
 | PF | Projeto Final | 50 | manual | — |
 
-> **A2 — como é avaliada:** a entrega é fork editando `exercicios/02-suite-jest-rntl/exercicio/__tests__/` **in-place** (não `aluno-<user>/`). O gate real é o **CI `test.yml`** do próprio exercício, que roda os testes e exige **Parte A** (≥14 unit verdes + cobertura store/utils) **e Parte B** (os 3 testes de `movieFlow.integration.test.tsx` verdes). O `unit-coverage.ts` é um validator **estrutural** (confere sinais sem rodar testes) — útil pra pontuar a rubrica, mas ainda não plugado num workflow.
+> **A2 — como é avaliada:** a entrega é fork editando `exercicios/02-suite-jest-rntl/pratica/__tests__/` **in-place** (não `aluno-<user>/`). O gate real é o **CI `test.yml`** do próprio exercício, que roda os testes e exige **Parte A** (≥14 unit verdes + cobertura store/utils) **e Parte B** (os 3 testes de `movieFlow.integration.test.tsx` verdes). O `unit-coverage.ts` é um validator **estrutural** (confere sinais sem rodar testes) — útil pra pontuar a rubrica, mas ainda não plugado num workflow.
 
 ## Como funciona
 
@@ -57,14 +57,14 @@ npm install
 
 # Validar entrega real com execução em emulator
 npx tsx lib/validators/maestro-suite.ts \
-  --entrega ../exercicios/03-maestro-e2e/exercicio \
+  --entrega ../exercicios/03-maestro-e2e/pratica \
   --output /tmp/grade.json \
   --student-login jacksonsmith \
   --commit-sha local
 
 # Modo dry-run (sem executar flows; só valida estrutura + parse)
 npx tsx lib/validators/maestro-suite.ts \
-  --entrega ../exercicios/03-maestro-e2e/exercicio \
+  --entrega ../exercicios/03-maestro-e2e/pratica \
   --output /tmp/grade.json \
   --no-run \
   --student-login jacksonsmith \

@@ -49,7 +49,7 @@ Conceitos gerais de testes mobile. Tipos de teste (funcionais, usabilidade, inte
 
 ```
 .
-├── exercicios/      # Atividades por aula (cada uma com exercicio/ — sem gabarito)
+├── exercicios/      # Atividades por aula (cada uma com pratica/ — sem gabarito)
 ├── slides/          # PDFs das aulas
 ├── grader/          # Autograder (CI)
 ├── docs/            # Guias auxiliares
@@ -73,8 +73,8 @@ Conceitos gerais de testes mobile. Tipos de teste (funcionais, usabilidade, inte
 git clone https://github.com/jacksonsmith/puc-iec-testes-aplicacoes-mobile.git
 cd puc-iec-testes-aplicacoes-mobile
 
-# Cada atividade tem seu código-base em exercicios/NN-.../exercicio/
-cd exercicios/02-suite-jest-rntl/exercicio
+# Cada atividade tem seu código-base em exercicios/NN-.../pratica/
+cd exercicios/02-suite-jest-rntl/pratica
 # Siga o README/enunciado específico da atividade
 ```
 
