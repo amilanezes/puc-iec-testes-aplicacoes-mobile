@@ -69,9 +69,14 @@ __tests__/                    ← SUA ENTREGA — numerados na ordem de fazer
 ```bash
 git clone https://github.com/SEU-USUARIO/puc-iec-testes-aplicacoes-mobile.git
 cd puc-iec-testes-aplicacoes-mobile/exercicios/02-suite-jest-rntl/pratica
+code .            # abra ESTA pasta no VS Code (não o repo inteiro)
 npm install
 npm test          # 3 verdes (posterUrl) + alguns vermelhos (complete o expect) + desafios (todo)
 ```
+
+> **Recomendado:** instale a extensão **`Orta.vscode-jest`** ("Jest") — ao abrir a pasta o VS Code sugere. Ela mostra **✓ verde / ✗ vermelho ao lado de cada `it()`** + Test Explorer (🧪), sem precisar ler o terminal.
+
+> ⚠️ **1º passo pra escrever qualquer teste: tire o `.todo`.** `it.todo('...')` é só um marcador — **não roda** (aparece "todo"). Troque por `it('...', () => { /* seu teste */ })` pra virar ✓/✗.
 
 > **Os testes (incl. RNTL de tela) não precisam de simulador, token nem rede.** Rodam só com Node.
 > O app só roda de verdade (`npx expo start`) se você gerar um token TMDB — opcional pra esta atividade.

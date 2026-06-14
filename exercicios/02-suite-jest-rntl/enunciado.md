@@ -32,6 +32,10 @@ npm test     # posterUrl já passa verde (3 testes). O resto é seu.
 
 > **Não precisa simulador, token TMDB nem rede.** Unit test roda só com Node.
 
+**Dica de editor:** abra a pasta `pratica/` no VS Code (`code .`, não o repo inteiro) e instale a extensão **`Orta.vscode-jest`** ("Jest") — ✓ verde / ✗ vermelho ao lado de cada `it()` + Test Explorer (🧪). Aí você vê o resultado sem ficar lendo o terminal.
+
+> ⚠️ **1º passo pra escrever qualquer teste: tire o `.todo`.** `it.todo('...')` é só um marcador — **não roda** (aparece "todo"). Troque por `it('...', () => { /* seu teste */ })` pra virar um teste de verdade (✓ ou ✗).
+
 ---
 
 ## Parte A — Suíte Unitária (10 pts) · escrever testes em `__tests__/`

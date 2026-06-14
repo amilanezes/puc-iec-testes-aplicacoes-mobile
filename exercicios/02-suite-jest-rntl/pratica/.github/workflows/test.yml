@@ -41,15 +41,15 @@ jobs:
 
       - name: Parte B — entrega de integração verde
         run: |
-          # Conta as asserções verdes do arquivo de entrega da Parte B (são 3:
-          # lista aparece + favoritar ♥1 + desfavoritar ♥0).
+          # Conta as asserções verdes do arquivo de entrega da Parte B (são 4:
+          # lista aparece por texto + por role + favoritar ♥1 + desfavoritar ♥0).
           PARTEB=$(jq '[.testResults[]
             | select(.name | endswith("movieFlow.integration.test.tsx"))
             | .assertionResults[] | select(.status=="passed")] | length' results.json)
-          echo "Integração (movieFlow) verde: $PARTEB / 3"
-          if [ "$PARTEB" -lt 3 ]; then
-            echo "❌ Parte B: os 3 testes de movieFlow.integration.test.tsx precisam passar"
-            echo "   (lista aparece · favoritar → ♥ 1 · desfavoritar → ♥ 0)"
+          echo "Integração (movieFlow) verde: $PARTEB / 4"
+          if [ "$PARTEB" -lt 4 ]; then
+            echo "❌ Parte B: os 4 testes de movieFlow.integration.test.tsx precisam passar"
+            echo "   (lista por texto · lista por role · favoritar → ♥ 1 · desfavoritar → ♥ 0)"
             exit 1
           fi
           echo "✅ Parte B: entrega de integração completa"
