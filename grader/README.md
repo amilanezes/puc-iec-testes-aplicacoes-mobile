@@ -4,13 +4,17 @@ Sistema de auto-correção das atividades práticas via GitHub Actions. Aluno fa
 
 ## Atividades cobertas
 
-| # | Atividade | Validator | Status |
-|---|-----------|-----------|--------|
-| A1 | Análise de Cobertura | manual (textual) | — |
-| A2 | Setup + Suíte Unitária | `unit-coverage.ts` | Fase 2 |
-| A3 | Suíte Native UI | `espresso-android.ts` | Fase 2 |
-| A4 | **Suíte Maestro Cross-Platform** | `maestro-suite.ts` | **MVP ativo** |
-| A5 | Performance + Security | manual (relatório) | — |
+> ⚠️ Numeração atualizada (jun/2026): **Detox/Espresso saíram**, Maestro é o único E2E. A Atividade 2 passou a incluir **Integração** (Parte B).
+
+| # | Atividade | Pts | Avaliador | Status |
+|---|-----------|-----|-----------|--------|
+| A1 | Análise de Cobertura | 15 | manual (textual) | — |
+| A2 | Suíte Unitária (Parte A) + Integração (Parte B) | 15 | **CI `exercicio/.github/workflows/test.yml`** (ativo) · `unit-coverage.ts` (estrutural, Fase 2) | **gate de CI ativo** |
+| A3 | Suíte Maestro Cross-Platform | 10 | `maestro-suite.ts` | **MVP ativo** |
+| A4 | Performance + Security | 10 | manual (relatório) | — |
+| PF | Projeto Final | 50 | manual | — |
+
+> **A2 — como é avaliada:** a entrega é fork editando `exercicios/02-setup-suite-unitaria/exercicio/__tests__/` **in-place** (não `aluno-<user>/`). O gate real é o **CI `test.yml`** do próprio exercício, que roda os testes e exige **Parte A** (≥14 unit verdes + cobertura store/utils) **e Parte B** (os 3 testes de `movieFlow.integration.test.tsx` verdes). O `unit-coverage.ts` é um validator **estrutural** (confere sinais sem rodar testes) — útil pra pontuar a rubrica, mas ainda não plugado num workflow.
 
 ## Como funciona
 
@@ -38,9 +42,12 @@ grader/
 ├── lib/
 │   ├── compute-score.ts           # tipos + helpers (rubrica → score)
 │   └── validators/
-│       └── maestro-suite.ts       # MVP A4
+│       ├── unit-coverage.ts       # A2 Unit (Parte A) + Integração (Parte B) — estrutural, 15pts
+│       └── maestro-suite.ts       # A3 Maestro — MVP ativo
 └── README.md
 ```
+
+> `native-ui-suite.ts` foi removido (atividade Espresso/Native UI não existe mais no curso).
 
 ## Rodar localmente (smoke test do prof)
 
@@ -50,21 +57,38 @@ npm install
 
 # Validar entrega real com execução em emulator
 npx tsx lib/validators/maestro-suite.ts \
-  --entrega ../exercicios/04-suite-maestro-cross-platform/aluno-jacksonsmith \
+  --entrega ../exercicios/03-maestro-e2e/exercicio \
   --output /tmp/grade.json \
   --student-login jacksonsmith \
   --commit-sha local
 
 # Modo dry-run (sem executar flows; só valida estrutura + parse)
 npx tsx lib/validators/maestro-suite.ts \
-  --entrega ../exercicios/04-suite-maestro-cross-platform/aluno-jacksonsmith \
+  --entrega ../exercicios/03-maestro-e2e/exercicio \
   --output /tmp/grade.json \
   --no-run \
   --student-login jacksonsmith \
   --commit-sha local
 ```
 
-## Critérios — A4 Maestro (15pts)
+## Critérios — A2 Unit + Integração (15pts) · `unit-coverage.ts`
+
+Parte A — Unitária (10):
+1. **Jest + RNTL configurados** — 2pts
+2. **Mín 4 arquivos de teste** — 3pts
+3. **Config de cobertura** — 2pts
+4. **Teste de tela RNTL** (render + interação) — 2pts
+5. **README com comandos** — 1pt
+
+Parte B — Integração (5):
+6. **Entrega `movieFlow.integration` presente** — 1pt
+7. **QueryClientProvider + API mockada** — 2pts
+8. **Fluxo do contador** (`favorites-count` / `toHaveTextContent`) — 1pt
+9. **renderHook OU NavigationContainer/AppNavigator** — 1pt
+
+Validator **estrutural** (não roda os testes) — pareia com o CI `test.yml` do exercício, que executa e gateia verde/vermelho. Pass threshold: 60% (9/15).
+
+## Critérios — A3 Maestro · `maestro-suite.ts`
 
 1. **Mín 5 flows YAML** em `flows/` — 4pts
 2. **appId em cada flow** — 2pts
@@ -72,7 +96,7 @@ npx tsx lib/validators/maestro-suite.ts \
 4. **Execução real em emulator** (mín 5 passam) — 4pts
 5. **README descrevendo flows** — 1pt
 
-Pass threshold: 60% (9/15).
+> ⚠️ **Follow-up:** o enunciado da A3 foi reescalado **15→10 pts** (Flows 6 · Firebase 2 · Matriz 2). O validator `maestro-suite.ts` ainda soma ~15 e cobre **só os flows** (Firebase/matriz são manuais). Rescale dos pesos + decisão sobre as partes manuais pendente.
 
 ## Adicionar novo validator (Fase 2+)
 
@@ -83,7 +107,7 @@ Pass threshold: 60% (9/15).
 
 ## Ambiente esperado em CI
 
-Workflow `.github/workflows/grade-atividade-04.yml` provê:
+Workflow `.github/workflows/grade-atividade-03.yml` provê:
 - Node 22
 - Java 17 (Android SDK)
 - Android SDK + emulator (via `reactivecircus/android-emulator-runner`)

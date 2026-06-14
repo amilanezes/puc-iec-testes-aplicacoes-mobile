@@ -1,4 +1,4 @@
-name: Suite Unitaria (Atividade 2 - Testes Mobile)
+name: Atividade 2 — Unit (Parte A) + Integracao (Parte B) — Testes Mobile
 
 on:
   push:                 # qualquer branch do próprio repo
@@ -22,20 +22,37 @@ jobs:
       - run: npm ci
 
       - name: Rodar testes
-        run: npm test -- --json --outputFile=results.json --passWithNoTests
+        # --forceExit: a suíte de integração (react-query/timers) pode deixar handles
+        # abertos e não encerrar o processo mesmo com todos os testes verdes.
+        run: npm test -- --json --outputFile=results.json --passWithNoTests --forceExit
 
-      - name: Validar mínimo de testes
+      - name: Parte A — mínimo de testes unitários verdes
         run: |
           TESTS_PASSED=$(jq '.numPassedTests' results.json)
           TESTS_TOTAL=$(jq '.numTotalTests' results.json)
-          echo "✅ Passou: $TESTS_PASSED / $TESTS_TOTAL"
+          echo "Total verde no projeto: $TESTS_PASSED / $TESTS_TOTAL"
           MIN_REQUIRED=14
           if [ "$TESTS_PASSED" -lt "$MIN_REQUIRED" ]; then
-            echo "❌ Mínimo $MIN_REQUIRED testes verdes obrigatório (encontrado: $TESTS_PASSED)"
+            echo "❌ Parte A: mínimo $MIN_REQUIRED testes verdes (encontrado: $TESTS_PASSED)"
             echo "   Esperado: favoritesStore (6) + MovieCard RNTL (2) + isTokenError (5) + counterStore (3)"
             exit 1
           fi
-          echo "✅ Atende mínimo de $MIN_REQUIRED testes"
+          echo "✅ Parte A: atende o mínimo de $MIN_REQUIRED testes"
 
-      - name: Cobertura (store + utils ≥ 70%)
+      - name: Parte B — entrega de integração verde
+        run: |
+          # Conta as asserções verdes do arquivo de entrega da Parte B (são 3:
+          # lista aparece + favoritar ♥1 + desfavoritar ♥0).
+          PARTEB=$(jq '[.testResults[]
+            | select(.name | endswith("movieFlow.integration.test.tsx"))
+            | .assertionResults[] | select(.status=="passed")] | length' results.json)
+          echo "Integração (movieFlow) verde: $PARTEB / 3"
+          if [ "$PARTEB" -lt 3 ]; then
+            echo "❌ Parte B: os 3 testes de movieFlow.integration.test.tsx precisam passar"
+            echo "   (lista aparece · favoritar → ♥ 1 · desfavoritar → ♥ 0)"
+            exit 1
+          fi
+          echo "✅ Parte B: entrega de integração completa"
+
+      - name: Cobertura Parte A (store + utils ≥ 70%)
         run: npm run test:coverage -- --collectCoverageFrom='src/store/**' --collectCoverageFrom='src/utils/**'
