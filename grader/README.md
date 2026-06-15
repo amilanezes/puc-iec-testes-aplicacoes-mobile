@@ -9,12 +9,12 @@ Sistema de auto-correção das atividades práticas via GitHub Actions. Aluno fa
 | # | Atividade | Pts | Avaliador | Status |
 |---|-----------|-----|-----------|--------|
 | A1 | Análise de Cobertura | 15 | manual (textual) | — |
-| A2 | Suíte Unitária (Parte A) + Integração (Parte B) | 15 | **CI `pratica/.github/workflows/test.yml`** (ativo) · `unit-coverage.ts` (estrutural, Fase 2) | **gate de CI ativo** |
+| A2 | Suíte Unitária (Parte A) + Integração (Parte B) | 15 | `a2-suite-jest.ts` (**roda os testes** → nota mínima) + CI `pratica/.github/workflows/test.yml` | **autograder ativo** |
 | A3 | Suíte Maestro Cross-Platform | 10 | `maestro-suite.ts` | **MVP ativo** |
 | A4 | Performance + Security | 10 | manual (relatório) | — |
 | PF | Projeto Final | 50 | manual | — |
 
-> **A2 — como é avaliada:** a entrega é fork editando `exercicios/02-suite-jest-rntl/pratica/__tests__/` **in-place** (não `aluno-<user>/`). O gate real é o **CI `test.yml`** do próprio exercício, que roda os testes e exige **Parte A** (≥14 unit verdes + cobertura store/utils) **e Parte B** (os 3 testes de `movieFlow.integration.test.tsx` verdes). O `unit-coverage.ts` é um validator **estrutural** (confere sinais sem rodar testes) — útil pra pontuar a rubrica, mas ainda não plugado num workflow.
+> **A2 — como é avaliada:** a entrega é fork editando `exercicios/02-suite-jest-rntl/pratica/__tests__/` **in-place** (o discover acha em qualquer path). O autograder **roda os testes** e posta uma **nota mínima** (piso de verdes reais) por commit, via **dois workflows seguros**: `grade-atividade-02-run.yml` (`on: pull_request`, SEM token — roda os testes do fork em sandbox → artifact `results.json`+cobertura) e `grade-atividade-02-comment.yml` (`on: workflow_run`, COM token — só **lê** o artifact, roda `a2-suite-jest.ts` e comenta). Nunca executa código do aluno no job com token. ⚠️ PR de **first-time contributor** pede 1 aprovação manual pra rodar (limitação do `pull_request` em fork); commits seguintes rodam sozinhos.
 
 ## Como funciona
 
@@ -40,9 +40,9 @@ grader/
 ├── package.json
 ├── tsconfig.json
 ├── lib/
-│   ├── compute-score.ts           # tipos + helpers (rubrica → score)
+│   ├── compute-score.ts           # tipos + helpers (computeScore/computeAuto/manual)
 │   └── validators/
-│       ├── unit-coverage.ts       # A2 Unit (Parte A) + Integração (Parte B) — estrutural, 15pts
+│       ├── a2-suite-jest.ts       # A2 — lê results.json (jest --json) + cobertura → nota mínima
 │       └── maestro-suite.ts       # A3 Maestro — MVP ativo
 └── README.md
 ```
@@ -71,22 +71,28 @@ npx tsx lib/validators/maestro-suite.ts \
   --commit-sha local
 ```
 
-## Critérios — A2 Unit + Integração (15pts) · `unit-coverage.ts`
+## Critérios — A2 Suíte Jest/RNTL (15pts) · `a2-suite-jest.ts`
 
-Parte A — Unitária (10):
-1. **Jest + RNTL configurados** — 2pts
-2. **Mín 4 arquivos de teste** — 3pts
-3. **Config de cobertura** — 2pts
-4. **Teste de tela RNTL** (render + interação) — 2pts
-5. **README com comandos** — 1pt
+Lê o resultado de `jest --json` + `coverage-summary.json` e conta **verdes por suíte** (denominador esperado FIXO — deletar testes não infla). Rubrica real do enunciado:
 
-Parte B — Integração (5):
-6. **Entrega `movieFlow.integration` presente** — 1pt
-7. **QueryClientProvider + API mockada** — 2pts
-8. **Fluxo do contador** (`favorites-count` / `toHaveTextContent`) — 1pt
-9. **renderHook OU NavigationContainer/AppNavigator** — 1pt
+Parte A (10):
+1. **`npm install && npm test` roda** (eliminatório) — 2pts
+2. **favoritesStore** (6 verdes) — 2pts
+3. **MovieCard RNTL** (render + press navega) — 2pts
+4. **isTokenError** (5 verdes) — 2pts
+5. **counterStore** (3 verdes) — 1pt
+6. **cobertura ≥ 70%** em `src/store` e `src/utils` — 1pt
 
-Validator **estrutural** (não roda os testes) — pareia com o CI `test.yml` do exercício, que executa e gateia verde/vermelho. Pass threshold: 60% (9/15).
+Parte B (5):
+7. **`movieFlow.integration`** (lista aparece + favoritar ♥1 + desfavoritar ♥0) — 5pts
+
+Nota MÍNIMA (piso de verdes reais). Pass threshold: 60% (9/15). Validar local:
+```bash
+# rode os testes da entrega gerando results.json + coverage-summary.json, depois:
+npx tsx lib/validators/a2-suite-jest.ts \
+  --results /tmp/results.json --coverage /tmp/cov/coverage-summary.json \
+  --output /tmp/grade.json --student-login fulano --commit-sha local
+```
 
 ## Critérios — A3 Maestro · `maestro-suite.ts`
 

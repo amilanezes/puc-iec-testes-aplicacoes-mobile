@@ -1,0 +1,95 @@
+name: Grade A2 comment — posta nota mínima
+
+# Etapa 2/2 do autograder seguro: roda em contexto CONFIÁVEL (base), com token de
+# escrita, mas SÓ LÊ o artifact (results.json/cobertura/meta) produzido pela etapa 1.
+# Nunca executa código do aluno. Roda o validator e comenta a nota mínima no PR.
+on:
+  workflow_run:
+    workflows: ['Grade A2 run — roda os testes do fork (sem token)']
+    types: [completed]
+
+permissions:
+  pull-requests: write
+  contents: read
+  actions: read
+
+jobs:
+  comment:
+    if: github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4 # base/main: o grader CONFIÁVEL do prof
+
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: a2-run
+          path: out
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        run: |
+          if [ ! -f out/meta.json ]; then echo "skip=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          node -e '
+            const m=require("./out/meta.json"), fs=require("fs");
+            fs.appendFileSync(process.env.GITHUB_OUTPUT,
+              `pr=${m.pr}\nlogin=${m.login}\nsha=${m.sha}\nskip=${m.skip}\n`);
+          '
+
+      - if: steps.meta.outputs.skip != 'true'
+        uses: actions/setup-node@v4
+        with: { node-version: 22 }
+
+      - if: steps.meta.outputs.skip != 'true'
+        working-directory: ./grader
+        run: npm ci || npm install
+
+      - name: Rodar validator (só lê o results.json)
+        if: steps.meta.outputs.skip != 'true'
+        working-directory: ./grader
+        run: |
+          npx tsx lib/validators/a2-suite-jest.ts \
+            --results "../out/results.json" \
+            --coverage "../out/coverage-summary.json" \
+            --output /tmp/grade.json \
+            --student-login "${{ steps.meta.outputs.login }}" \
+            --commit-sha "${{ steps.meta.outputs.sha }}" || true
+
+      - if: steps.meta.outputs.skip != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: grade-${{ steps.meta.outputs.login }}
+          path: /tmp/grade.json
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Comentar no PR (nota mínima + porquê)
+        if: steps.meta.outputs.skip != 'true'
+        continue-on-error: true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('node:fs');
+            const pr = Number('${{ steps.meta.outputs.pr }}');
+            const head = `## 🤖 J.A.R.V.I.S. — *autograder do Prof. Jackson*\n\n` +
+              `> *Just A Rather Very Intelligent System* — roda as regras de avaliação automatizada nos PRs.\n\n` +
+              `**Atividade 2 — Suíte Jest/RNTL (Parte A unit + Parte B integração)**\n\n`;
+            if (!fs.existsSync('/tmp/grade.json')) {
+              await github.rest.issues.createComment({ ...context.repo, issue_number: pr,
+                body: head + `❌ A suíte não executou (erro de \`npm install\`/config ou nenhum teste). Rode \`npm install && npm test\` localmente e confira o verde antes de commitar.` });
+              return;
+            }
+            const g = JSON.parse(fs.readFileSync('/tmp/grade.json', 'utf8'));
+            const fmt = (n) => String(n).replace('.', ',');
+            const body = head +
+              `### ${g.pass ? '✅' : '⚠️'} Nota MÍNIMA automática: **${fmt(g.score)} / ${g.total}**\n` +
+              `É um **piso** (testes verdes de verdade). A nota final (no **Canvas**) parte daqui e **só sobe** com a revisão.\n\n` +
+              `${g.publicBreakdown}\n\n` +
+              (g.pass
+                ? `✅ Você atingiu o mínimo automático. Faltando algum ❌? Commita o ajuste que eu re-avalio.\n\n`
+                : `⚠️ Abaixo do mínimo — veja os ❌ acima, rode \`npm test\` local e faça um novo commit (re-avalio a cada commit).\n\n`) +
+              `🎥 Anexe um **screencast (≤ 2min)** de \`npm test\` + \`npm run test:coverage\` verdes na descrição do PR.\n` +
+              `_Dúvidas? **Teams da turma** ou jackson.96@gmail.com._`;
+            await github.rest.issues.createComment({ ...context.repo, issue_number: pr, body });

@@ -1,0 +1,89 @@
+name: Grade A2 run — roda os testes do fork (sem token)
+
+# Etapa 1/2 do autograder seguro: roda os testes do aluno (código NÃO-confiável)
+# num job `pull_request` SEM token de escrita e SEM segredos. O resultado vira
+# artifact (results.json + cobertura + meta), lido depois pelo workflow de comentário.
+on:
+  pull_request:
+    paths:
+      - 'exercicios/02-suite-jest-rntl/**'
+
+permissions:
+  contents: read # nada de pull-requests:write aqui — é onde roda código não-confiável
+
+env:
+  EXERCISE: exercicios/02-suite-jest-rntl
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: discover
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const path = require('node:path');
+            const EX = process.env.EXERCISE;
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner, repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number, per_page: 100,
+            });
+            const changed = files.map(f => f.filename)
+              .filter(f => f.startsWith(EX + '/') && !f.includes('/node_modules/')
+                 && !f.startsWith(`${EX}/gabarito/`) && !f.startsWith(`${EX}/exemplo-resolvido/`));
+            let entrega = changed.filter(f => f.endsWith('/package.json')).map(f => path.posix.dirname(f))[0];
+            if (!entrega) {
+              const counts = {};
+              for (const f of changed) {
+                const rest = f.slice(EX.length + 1);
+                if (rest.includes('/')) { const t = rest.split('/')[0]; counts[t] = (counts[t]||0)+1; }
+              }
+              const top = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0]?.[0];
+              if (top) entrega = `${EX}/${top}`;
+            }
+            core.setOutput('skip', changed.length ? 'false' : 'true');
+            core.setOutput('entrega', entrega || EX);
+            core.setOutput('login', (context.payload.pull_request.user.login || '').toLowerCase());
+            core.info(`entrega=${entrega} changed=${changed.length}`);
+
+      - if: steps.discover.outputs.skip != 'true'
+        uses: actions/setup-node@v4
+        with: { node-version: 22, cache: 'npm', cache-dependency-path: '${{ steps.discover.outputs.entrega }}/package-lock.json' }
+
+      - name: Instalar deps da entrega (sandbox sem token)
+        if: steps.discover.outputs.skip != 'true'
+        working-directory: ${{ steps.discover.outputs.entrega }}
+        run: npm ci || npm install
+
+      - name: Rodar Jest (--json + cobertura)
+        if: steps.discover.outputs.skip != 'true'
+        working-directory: ${{ steps.discover.outputs.entrega }}
+        run: |
+          npx jest --json --outputFile="$RUNNER_TEMP/results.json" \
+            --coverage --coverageReporters=json-summary --coverageDirectory="$RUNNER_TEMP/cov" \
+            --forceExit --passWithNoTests || true
+
+      - name: Montar artifact (results + cobertura + meta)
+        if: always()
+        run: |
+          mkdir -p "$RUNNER_TEMP/out"
+          cp "$RUNNER_TEMP/results.json" "$RUNNER_TEMP/out/results.json" 2>/dev/null || true
+          cp "$RUNNER_TEMP/cov/coverage-summary.json" "$RUNNER_TEMP/out/coverage-summary.json" 2>/dev/null || true
+          cat > "$RUNNER_TEMP/out/meta.json" <<EOF
+          { "pr": ${{ github.event.pull_request.number }},
+            "login": "${{ steps.discover.outputs.login }}",
+            "sha": "${{ github.event.pull_request.head.sha }}",
+            "entrega": "${{ steps.discover.outputs.entrega }}",
+            "skip": "${{ steps.discover.outputs.skip }}" }
+          EOF
+
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a2-run
+          path: ${{ runner.temp }}/out
+          retention-days: 7
+          if-no-files-found: warn
