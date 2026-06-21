@@ -3,6 +3,8 @@ name: Grade — Ativ. 3 Maestro E2E
 on:
   pull_request_target:
     types: [opened, synchronize, reopened]
+    paths:
+      - 'exercicios/03-maestro-e2e/**'
 
 permissions:
   pull-requests: write
@@ -11,6 +13,7 @@ permissions:
 jobs:
   grade:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       # 1. Checkout base (grader confiável do prof)
@@ -29,7 +32,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: exercicios/03-maestro-e2e/grader/package.json
+          cache-dependency-path: exercicios/03-maestro-e2e/grader/package-lock.json
 
       - name: Install grader deps
         run: npm install
@@ -45,7 +48,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: grade-${{ github.event.pull_request.number }}
+          name: grade-pr${{ github.event.pull_request.number }}
           path: exercicios/03-maestro-e2e/grader/grade.json
           retention-days: 90
 
