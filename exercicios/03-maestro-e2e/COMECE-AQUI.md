@@ -32,12 +32,14 @@ Confira: `adb devices` → deve listar seu device/emulator.
 
 ## 2. App CineFav
 
-App próprio da disciplina — **não está em nenhuma loja**, **não precisa de token** (dados mockados). Baixe o APK pré-compilado:
+App próprio da disciplina — **não está em nenhuma loja**. O APK pronto roda com **dados mockados** (filmes fixos, **sem token, sem rede**) — é tudo que a atividade precisa:
 
 ```bash
 # https://github.com/jacksonsmith/puc-iec-testes-aplicacoes-mobile/releases
 adb install CineFav.apk
 ```
+
+> **Opcional:** quer filmes **reais** da TMDB (como na A2)? Rode do código-fonte: `cd pratica && cp .env.example .env`, cole seu token TMDB, `npx expo start`. Sem token = mock.
 
 ## 3. Maestro CLI
 

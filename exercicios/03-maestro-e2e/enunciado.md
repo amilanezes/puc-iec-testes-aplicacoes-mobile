@@ -16,7 +16,9 @@ Você já testou o app de filmes em dois níveis:
 
 Agora, **Atividade 3 (E2E):** o **mesmo app**, testado de ponta a ponta com **Maestro** — abrindo o app de verdade no emulador/device e dirigindo a UI como um usuário.
 
-O app desta atividade — **CineFav** — é uma versão do app de filmes com **login**, **busca** e **favoritos**, e usa **dados mockados** (sem token TMDB, sem rede): os flows são **determinísticos**, sempre os mesmos filmes.
+O app desta atividade — **CineFav** — é uma versão do app de filmes com **login**, **busca** e **favoritos**. Por padrão usa **dados mockados** (sem token TMDB, sem rede): os flows são **determinísticos**, sempre os mesmos filmes.
+
+> **Opcional:** quer ver filmes **reais** da TMDB (como na A2)? Copie `.env.example` → `.env`, cole seu token e rode `npx expo start`. Sem token, o app roda mock (e o APK pronto já é mock). Os flows abaixo assumem o **mock** — com token real os filmes mudam, então use a **busca** (`Matrix` sempre acha) pra manter o flow estável.
 
 ---
 
