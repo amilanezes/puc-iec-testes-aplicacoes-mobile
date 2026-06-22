@@ -16,19 +16,29 @@ Você precisa de **um** dos dois:
 | 💻 **Emulador** (Android Studio) | Sem celular | Pesado — precisa de RAM |
 
 **Celular físico:** ative *Opções do desenvolvedor* → *Depuração USB*, conecte o cabo.
-**Emulador:** Android Studio → Device Manager → ▶. Em PC fraco, use AVD com pouca RAM e cold boot.
+**Emulador:** precisa do Android Studio (passo 1).
 
 ---
 
-## 1. adb (Android Platform Tools)
+## 1. Android Studio + adb + variáveis de ambiente
 
-| SO | Comando |
-|---|---|
-| 🍎 macOS | `brew install android-platform-tools` |
-| 🪟 Windows | `choco install android-platform-tools` |
-| 🐧 Linux | `sudo apt install android-tools-adb` |
+> **É a parte que mais trava.** Faça com calma, em casa.
 
-Confira: `adb devices` → deve listar seu device/emulator.
+**a) Instale o Android Studio** — `developer.android.com/studio`. Ele traz o **SDK**, o **`adb`** (platform-tools) e o **emulador**.
+(Alternativa só-`adb`, sem Studio: macOS `brew install android-platform-tools` · Windows `choco install android-platform-tools` · Linux `sudo apt install android-tools-adb`.)
+
+**b) Variáveis de ambiente** — pra `adb`/`emulator` funcionarem no terminal:
+
+```bash
+# macOS / Linux — adicione no ~/.zshrc (ou ~/.bashrc) e reabra o terminal:
+export ANDROID_HOME=$HOME/Library/Android/sdk      # Linux: $HOME/Android/Sdk
+export PATH=$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator
+```
+- **Windows:** Painel de Controle → *Editar variáveis de ambiente* → criar **`ANDROID_HOME`** (ex: `C:\Users\voce\AppData\Local\Android\Sdk`) e adicionar `%ANDROID_HOME%\platform-tools` e `%ANDROID_HOME%\emulator` no **Path**. Reabra o terminal.
+
+**c) Criar um emulador** (se não usar celular): Android Studio → **Device Manager** → *Create device* → escolha um Pixel + imagem (API 34) → ▶.
+
+Confira tudo: **`adb devices`** deve listar seu device/emulator.
 
 ## 2. App CineFav
 
