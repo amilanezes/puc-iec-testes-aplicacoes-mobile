@@ -1,0 +1,14 @@
+# Maestro debug output (recordings, logs, screenshots de execução)
+.maestro/
+~/.maestro/tests/
+
+# Screenshots geradas pelos flows (takeScreenshot)
+*.png
+flows/**/*.png
+
+# APK baixado pra testar (não commitar binário)
+*.apk
+
+# OS
+.DS_Store
+Thumbs.db
