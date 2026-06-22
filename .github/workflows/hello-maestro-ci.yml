@@ -1,0 +1,49 @@
+name: Hello Maestro — CI (Exercício 03a)
+
+on:
+  push:
+    paths:
+      - 'exercicios/03-hello-maestro/pratica/flows/**'
+  pull_request:
+    paths:
+      - 'exercicios/03-hello-maestro/pratica/flows/**'
+
+jobs:
+  maestro:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Maestro CLI
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+
+      - name: Enable KVM (Android emulator speed)
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run Maestro flows on Android Emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: default
+          arch: x86_64
+          profile: pixel_6
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: true
+          script: |
+            curl -sL https://github.com/SimpleMobileTools/Simple-Calculator/releases/download/5.12.0/calculator-fdroid-release.apk -o /tmp/calc.apk
+            adb install /tmp/calc.apk
+            maestro test exercicios/03-hello-maestro/pratica/flows/ --format junit --output results.xml
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: maestro-results
+          path: results.xml

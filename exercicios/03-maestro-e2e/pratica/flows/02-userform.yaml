@@ -1,9 +1,0 @@
-# Flow 2 — Preencher formulário de usuário e submeter
-appId: com.apptestesmobile
----
-- launchApp
-# TODO: navegar até o formulário de usuário
-# TODO: tapOn { id: "userform-name-input" } e inputText do nome
-# TODO: tapOn { id: "userform-email-input" } e inputText do email
-# TODO: tapOn { id: "userform-submit-button" }
-# TODO: assertVisible da confirmação de sucesso

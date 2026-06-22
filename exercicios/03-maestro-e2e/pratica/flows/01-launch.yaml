@@ -1,8 +1,18 @@
-# Flow 1 — Launch + home aparece com categorias (MODELO RESOLVIDO)
-# Use este flow como referência para escrever os outros.
-appId: com.apptestesmobile
+# Flow 1 — MODELO RESOLVIDO ✅ (não precisa mexer; use como referência pros outros)
+#
+# Abre o app, faz login e confirma que a lista de filmes apareceu.
+# O app abre na tela de Login — todo flow precisa logar antes de chegar na lista.
+appId: com.puciec.cinefav
 ---
 - launchApp
+- tapOn:
+    id: "login-email-input"
+- inputText: "aluno@puc.br"
+- tapOn:
+    id: "login-password-input"
+- inputText: "1234"
+- tapOn:
+    id: "login-submit-button"
 - assertVisible:
-    id: "home-category-functional"
-- assertVisible: "Testes Funcionais"
+    id: "movielist-screen"
+- assertVisible: "Matrix"

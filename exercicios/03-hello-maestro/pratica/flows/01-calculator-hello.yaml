@@ -1,0 +1,10 @@
+appId: com.simplemobiletools.calculator
+---
+- launchApp
+- tapOn: "7"
+- tapOn: "+"
+- tapOn: "3"
+- tapOn: "="
+# TODO: corrija o assert abaixo — o resultado esperado de 7 + 3 é ?
+- assertVisible: "11"
+- takeScreenshot: "calculator-7-plus-3"

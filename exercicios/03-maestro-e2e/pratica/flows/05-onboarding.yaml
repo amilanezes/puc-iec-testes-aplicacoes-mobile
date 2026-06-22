@@ -1,8 +1,0 @@
-# Flow 5 — Completar onboarding até a tela final
-appId: com.apptestesmobile
----
-- launchApp
-# TODO: navegar/abrir o onboarding
-# TODO: tapOn { id: "onboarding-next-button" } pelas telas (repetir conforme necessário)
-# TODO: tapOn { id: "onboarding-finish-button" }
-# TODO: assertVisible da home após concluir o onboarding

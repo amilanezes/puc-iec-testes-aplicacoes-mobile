@@ -1,153 +1,144 @@
-# Atividade 3 — Suíte Maestro Cross-Platform (10 pts)
+# Atividade 3 — Suíte Maestro E2E (10 pts)
 
 **Disciplina:** Testes de Aplicações Mobile
-**Entrega:** até **28/06/2026** (1 semana após a Aula 4)
+**Entrega:** até **28/06/2026**
 **Modalidade:** individual
-**Tempo estimado:** ~2-3 horas
-**Dificuldade:** ⭐⭐ Médio — Maestro CLI (simples), requer simulador iOS ou Android + conta Google
+**Tempo estimado:** ~2h (flows 01–02 feitos em aula; 03–05 em casa)
 
 ---
 
-## Por que essa atividade
+## Contexto — a pirâmide fecha no mesmo app
 
-Aula 4 mostrou que Maestro é o framework E2E com menor curva de aprendizado e alta adoção em 2026. Aqui você vai escrever flows YAML reais, rodar em device físico via cloud e comparar com Appium com dados reais — não com opinião.
+Você já testou o app de filmes em dois níveis:
 
----
+- **Atividade 1 (unit):** funções puras, store de favoritos
+- **Atividade 2 (integração):** componentes + navegação + TanStack Query
 
-## Pré-requisito (setup ~15min)
+Agora, **Atividade 3 (E2E):** o **mesmo app**, testado de ponta a ponta com **Maestro** — abrindo o app de verdade no emulador/device e dirigindo a UI como um usuário.
 
-```bash
-# 1. Instalar Maestro CLI
-curl -Ls "https://get.maestro.mobile.dev" | bash
-# Windows: iwr get.maestro.mobile.dev/windows | iex
+O app desta atividade — **CineFav** — é uma versão do app de filmes com **login**, **busca** e **favoritos**. Por padrão usa **dados mockados** (sem token TMDB, sem rede): os flows são **determinísticos**, sempre os mesmos filmes.
 
-# 2. Verificar
-maestro --version   # deve exibir 1.38.x ou superior
-
-# 3. Clonar o starter
-git clone https://github.com/jacksonsmith/puc-iec-testes-aplicacoes-mobile.git
-cd puc-iec-testes-aplicacoes-mobile/exercicios/03-maestro-e2e/pratica
-
-# 4. App-alvo já instalado nos devices da disciplina:
-#    iOS:     com.apptestesmobile  (App Store BR)
-#    Android: com.apptestesmobile  (Play Store)
-```
-
-> Não precisa de Xcode nem Android Studio pra escrever flows YAML. Só precisa do app instalado no simulador/emulador e do Maestro CLI.
+> **Opcional:** quer ver filmes **reais** da TMDB (como na A2)? Copie `.env.example` → `.env`, cole seu token e rode `npx expo start`. Sem token, o app roda mock (e o APK pronto já é mock). Os flows abaixo assumem o **mock** — com token real os filmes mudam, então use a **busca** (`Matrix` sempre acha) pra manter o flow estável.
 
 ---
 
-## O app-alvo: TestesQAMobile
+## Pré-requisitos (setup)
 
-App da disciplina com bugs propositais. Disponível em:
-- 🍎 App Store BR: buscar "Testes QA Mobile" ou usar `appId: com.apptestesmobile`
-- 🤖 Play Store: mesma busca
+👉 **Guia completo:** [COMECE-AQUI.md](https://github.com/jacksonsmith/puc-iec-testes-aplicacoes-mobile/blob/main/exercicios/03-maestro-e2e/COMECE-AQUI.md) — passo a passo por SO + troubleshooting.
 
-**testIDs disponíveis no app** (convenção `screen-elemento[-acao]`):
+**Resumo (3 passos):**
 
-| Tela | testID exemplo |
+1. **App CineFav** — baixar APK pronto e instalar (sem build, sem token):
+   ```bash
+   # https://github.com/jacksonsmith/puc-iec-testes-aplicacoes-mobile/releases
+   adb install CineFav.apk
+   ```
+2. **Maestro CLI** — `curl -Ls https://get.maestro.mobile.dev | bash` (Windows: `iwr get.maestro.mobile.dev/windows | iex`)
+3. **Verificar** — na raiz do repo:
+   ```bash
+   bash setup-maestro-check.sh        # macOS/Linux
+   # powershell -ExecutionPolicy Bypass -File setup-maestro-check.ps1   # Windows
+   ```
+
+Tudo verde ✅ → pronto.
+
+---
+
+## O app-alvo: CineFav (`com.puciec.cinefav`)
+
+O app **abre na tela de Login** — todo flow precisa logar antes de chegar na lista.
+Login mock: **qualquer email com `@` + senha de 4+ caracteres** entra (ex.: `aluno@puc.br` / `1234`).
+
+| Tela | testIDs disponíveis |
 |---|---|
-| Home | `home-category-functional`, `home-category-performance` |
-| Formulário de Usuário | `userform-name-input`, `userform-email-input`, `userform-submit-button` |
-| Calculadora | `calculator-digit-7`, `calculator-operator-plus`, `calculator-equals`, `calculator-display` |
-| Todo list | `todolist-add-button`, `todolist-item-${id}`, `todolist-item-delete-${id}` |
-| Onboarding | `onboarding-next-button`, `onboarding-skip-button`, `onboarding-finish-button` |
+| **Login** | `login-screen`, `login-email-input`, `login-password-input`, `login-submit-button`, `login-error-message` |
+| **Lista** | `movielist-screen`, `movielist-list`, `movielist-search-button`, `movielist-favorites-button` |
+| **Card do filme** | `movie-card-{id}`, `movie-card-title-{id}`, `movie-card-heart-{id}` |
+| **Detalhe** | `detail-screen`, `detail-title`, `detail-favorite-button`, `detail-back-button` |
+| **Busca** | `search-screen`, `search-input`, `search-clear-button`, `search-result-{id}`, `search-empty` |
+| **Favoritos** | `favorites-screen`, `favorites-count`, `favorites-item-{id}`, `favorites-item-{id}-remove`, `favorites-empty` |
+
+> `{id}` = id do filme. Ex.: **Matrix** = `603` → `movie-card-603`, `movie-card-heart-603`.
+> São os **mesmos testIDs** (`movie-card-{id}`, `movie-card-heart-{id}`, `favorites-count`) que você viu nos testes de integração da A2.
+
+Use `tapOn: id: "testID"` — mais estável que `tapOn: "texto"`.
+
+### Caminho de navegação
+
+```
+launchApp → Login → (logar) → Lista de filmes
+                                  ├─ 🔍 busca   (movielist-search-button)
+                                  ├─ ❤️ favoritos (movielist-favorites-button)
+                                  └─ tap no card → Detalhe
+```
 
 ---
 
-## Parte 1 — 5 Flows Maestro (6 pts)
+## Os 5 flows
 
-Escreva **5 flows YAML** cobrindo features diferentes do app. Cada flow deve:
-- Usar `tapOn: id:` (não `tapOn: text:`) nos elementos que têm testID
-- Ter pelo menos 1 `assertVisible` que verifique resultado esperado
-- Rodar verde em **ao menos uma plataforma** (iOS sim OU Android emu)
-
-**Pontuação:** **1 pt por flow** que rodar verde (até 5) **+ 1 pt** se os **5** rodarem verde = 6 pts.
-
-**Flows obrigatórios:**
-
-| # | Flow | Arquivo |
+| Flow | O que testa | Conceito Maestro |
 |---|---|---|
-| 1 | Launch + home aparece com categorias | `flows/01-launch.yaml` |
-| 2 | Preencher formulário de usuário e submeter | `flows/02-userform.yaml` |
-| 3 | Calcular `7 + 3 =` e verificar resultado `10` | `flows/03-calculator.yaml` |
-| 4 | Adicionar item na todo list + verificar que aparece | `flows/04-todolist.yaml` |
-| 5 | Completar onboarding até a tela final | `flows/05-onboarding.yaml` |
+| `flows/01-launch.yaml` | login + lista aparece (`assertVisible "Matrix"`) | **modelo resolvido** ✅ |
+| `flows/02-search.yaml` | buscar um filme | **env** (`SEARCH_TERM`) |
+| `flows/03-favorite.yaml` | favoritar na lista → conferir em Favoritos | asserção **cross-tela** |
+| `flows/04-detail.yaml` | abrir detalhe, favoritar lá, voltar | navegação entre telas |
+| `flows/05-js-dynamic.yaml` | termo de busca gerado por JS | **evalScript** (JS inline) |
 
-**Bônus +1pt:** flow que usa `runFlow:` com fragmento reutilizável (ex: `_fragments/launch.yaml` chamado por múltiplos flows)
-
-### Rodando os flows
-
-```bash
-# Flow individual (iOS Simulator)
-maestro test flows/01-launch.yaml
-
-# Todos os flows
-maestro test flows/
-
-# Com screenshots
-maestro test flows/ --format junit --output results/
-```
+`01-launch.yaml` já vem **resolvido** no starter — use como modelo. Os outros têm comentários `# TODO` guiando.
 
 ---
 
-## Parte 2 — Firebase Test Lab (2 pts)
+## Critérios de avaliação
 
-Execute **ao menos 1 flow** em device real via Firebase Test Lab:
+| Item | Pts |
+|---|---|
+| `01-launch.yaml` (modelo — já resolvido) | 2 |
+| `02-search.yaml` completo | 2 |
+| `03-favorite.yaml` completo | 2 |
+| `04-detail.yaml` completo | 2 |
+| `05-js-dynamic.yaml` completo | 2 |
+| **Bônus** — extrair um fragmento em `flows/_fragments/` (ex.: login) e usar via `runFlow:` | +1 |
 
-```bash
-# 1. Login Google Cloud
-gcloud auth login
-gcloud config set project SEU-PROJETO-FIREBASE
+**Total: 10 pts** (+ 1 bônus)
 
-# 2. Verificar devices disponíveis
-gcloud firebase test android models list | grep -E "shiba|redfin|oriole"
+Cada flow vale **2 pts**: 1pt por existir com `appId:` correto + 1pt por estar completo (sem `# TODO` + tem `assertVisible`).
 
-# 3. Submeter flow (Maestro Cloud ou gcloud diretamente)
-maestro cloud --apiKey=$MAESTRO_API_KEY \
-  --app-file=path/to/app.apk \
-  flows/03-calculator.yaml
-```
-
-Entregável: **screenshot do relatório Firebase Test Lab** mostrando ao menos 1 flow verde em device real.
+> **Dica do bônus:** todo flow precisa logar. Em vez de repetir os passos de login, crie `flows/_fragments/login.yaml` (com `appId: com.puciec.cinefav` + `---` + os passos do login) e chame com `runFlow`:
+> ```yaml
+> - runFlow:
+>     when:
+>       visible:
+>         id: "login-screen"
+>     file: _fragments/login.yaml
+> ```
 
 ---
 
-## Parte 3 — Matriz Comparativa Maestro vs Appium (2 pts)
+## Rodando local
 
-Escreva uma **tabela comparativa** (pode ser em Markdown no PR ou PDF) com:
+**Emulator automático:**
+```bash
+cd exercicios/03-maestro-e2e
+bash ../../maestro-local.sh           # macOS/Linux  (Windows: maestro-local.ps1)
+```
 
-| Aspecto | Maestro | Appium 2 | Fonte / Referência |
-|---|---|---|---|
-| Linhas de código (flow de login) | X linhas | Y linhas | seu próprio teste |
-| Tempo de execução do flow | Xs | Ys | medição real |
-| Tempo de setup do zero | Xmin | Ymin | sua experiência |
-| Flake em 3 runs consecutivos | X% | Y% | ou estimativa fundamentada |
-| Suporte a cross-platform (mesmo arquivo) | sim/não | sim/não | docs |
-| Curva de aprendizado (escala 1–5) | X | Y | sua avaliação |
+**Manual (emulator já rodando):**
+```bash
+cd exercicios/03-maestro-e2e/pratica
+maestro test flows/02-search.yaml     # um flow
+maestro test flows/                    # todos
+maestro studio                         # editor visual (localhost:9999)
+```
 
-Adicione 2–3 linhas de análise: em que cenário cada um ganha.
+**Troubleshooting:**
+- Device não conecta? `adb kill-server && adb start-server`
+- Emulator lento? `emulator -avd XXX -no-snapshot-load -no-audio`
 
 ---
 
 ## Entrega
 
-PR no **seu fork** com:
+PR no **seu fork** com os 5 flows em `exercicios/03-maestro-e2e/pratica/flows/`.
 
-```
-exercicios/03-maestro-e2e/
-  flows/
-    01-launch.yaml
-    02-userform.yaml
-    03-calculator.yaml
-    04-todolist.yaml
-    05-onboarding.yaml
-    _fragments/          ← bônus
-  results/               ← saída do junit reporter (opcional)
-  firebase-screenshot.png
-  comparativo-maestro-appium.md   (ou .pdf)
-```
-
-Link do PR colado no Canvas (campo de entrega da Atividade 3).
-
-> **Eliminatório:** `maestro test flows/` deve rodar pelo menos 3 dos 5 flows verde. Se menos de 3 passarem, a Parte 1 não é pontuada.
+O bot (J.A.R.V.I.S.) comenta a nota no PR a cada commit — você sabe a nota antes do prazo.
+Após aprovação do bot, cole o link do PR no Canvas (campo de entrega da Atividade 3).

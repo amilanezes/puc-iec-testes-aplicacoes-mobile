@@ -1,0 +1,15 @@
+{
+  "files.associations": {
+    "flows/**/*.yaml": "yaml",
+    "flows/**/*.yml": "yaml"
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml",
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+  "yaml.validate": true,
+  "files.exclude": {
+    "**/.maestro": true
+  }
+}

@@ -1,8 +1,0 @@
-# Flow 4 — Adicionar item na todo list e verificar que aparece
-appId: com.apptestesmobile
----
-- launchApp
-# TODO: navegar até a todo list
-# TODO: tapOn { id: "todolist-add-button" }
-# TODO: inputText do nome do item
-# TODO: assertVisible do item recém-adicionado (todolist-item-${id})

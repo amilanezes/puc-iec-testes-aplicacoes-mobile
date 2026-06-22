@@ -78,11 +78,12 @@ java --version
 # Iniciar emulator Android
 emulator -avd Pixel_8_API_34 &
 
-# Instalar app TestesQAMobile via Play Store no emulator (use Google account)
-# OU baixar APK direto e instalar via adb
+# Instalar o app CineFav (APK dos Releases) — sem token, dados mockados
+adb install CineFav.apk
 
-# Rodar primeiro flow
-maestro test https://github.com/jacksonsmith/puc-iec-testes-aplicacoes-mobile/raw/main/exercicios/04-suite-maestro-cross-platform/starter/flows/01-launch.yaml
+# Rodar o primeiro flow (modelo resolvido)
+cd exercicios/03-maestro-e2e/pratica
+maestro test flows/01-launch.yaml
 ```
 
 ---
@@ -270,7 +271,7 @@ Comando exemplo (Firebase):
 
 ```bash
 gcloud firebase test android run \
-  --app TestesQAMobile.apk \
+  --app CineFav.apk \
   --type instrumentation \
   --device model=shiba,version=34
 ```
@@ -333,7 +334,8 @@ Pode ser:
 - [Docs oficiais Maestro](https://maestro.mobile.dev)
 - [Maestro YAML reference](https://maestro.mobile.dev/api-reference/commands)
 - Mobile.dev Blog — *Why YAML for E2E Tests*
-- App de referência da disciplina: [TestesQAMobile](https://play.google.com/store/apps/details?id=com.apptestesmobile) (Play Store) / [App Store BR](https://apps.apple.com/br/app/testes-qa-mobile/id6755933674)
+- App-alvo do Maestro E2E (Atividade 3): **CineFav** (`com.puciec.cinefav`) — APK nos Releases
+- App de testes manuais do prof: [TestesQAMobile](https://apps.apple.com/br/app/testes-qa-mobile/id6755933674) (App Store / Play Store)
 
 ---
 

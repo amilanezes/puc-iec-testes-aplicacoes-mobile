@@ -1,5 +1,0 @@
-# Fragmento reutilizável (BÔNUS) — abre o app e garante a home visível.
-# Use com `- runFlow: _fragments/open-home.yaml` no início de outros flows.
-- launchApp
-- assertVisible:
-    id: "home-category-functional"
